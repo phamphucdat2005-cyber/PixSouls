@@ -10,7 +10,7 @@ public class PauseManager : MonoBehaviour
     [SerializeField]
     private GameObject settingsPanel;
     public static bool IsPaused { get; private set; }
-    bool isPaused = false;
+   
 
     void Update()
     {
@@ -31,7 +31,7 @@ public class PauseManager : MonoBehaviour
 
     public void Resume()
     {
-        isPaused = false;
+        IsPaused = false;
 
         settingsPanel.SetActive(false);
 
