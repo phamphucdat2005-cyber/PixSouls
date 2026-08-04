@@ -44,8 +44,7 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        float volume = PlayerPrefs.GetFloat("MusicVolume", 1f);
-        musicSource.volume = volume;
+        musicSource.volume = PlayerPrefs.GetFloat("MusicVolume", 1f);      
        
     }
 

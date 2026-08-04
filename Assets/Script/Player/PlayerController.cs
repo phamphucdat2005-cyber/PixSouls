@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
@@ -16,6 +16,20 @@ public class PlayerMovement : MonoBehaviour
     private bool isPunching = false;
     private bool isAiming = false;
 
+    // Health
+    public int maxHealth = 100;
+    public int currentHealth;
+
+    // Dash
+    [SerializeField] private float dashSpeed = 20f;
+    [SerializeField] private float dashDuration = 0.2f;
+    [SerializeField] private float dashCooldown = 1f;
+    private bool isDashing = false;
+    private bool canDash = true;
+
+    // Invincibility
+    private bool isInvincible = false;
+
     [SerializeField]
     private GameObject arrowPrefab;
 
@@ -31,6 +45,8 @@ public class PlayerMovement : MonoBehaviour
         animator = GetComponent<Animator>();
        
         inputActions = new PlayerInputActions();
+
+        currentHealth = maxHealth;
     }
 
     private void OnEnable()
@@ -40,20 +56,22 @@ public class PlayerMovement : MonoBehaviour
         inputActions.Player.Punch.performed += OnPunch;
         inputActions.Player.Aim.started += OnAimStarted;
         inputActions.Player.Aim.canceled += OnAimCanceled;
+        inputActions.Player.Dash.performed += OnDash;
     }
 
     private void OnDisable()
     {
         inputActions.Player.Punch.performed -= OnPunch;
-
-        inputActions.Disable();
         inputActions.Player.Aim.started -= OnAimStarted;
         inputActions.Player.Aim.canceled -= OnAimCanceled;
+        inputActions.Player.Dash.performed -= OnDash;
+
+        inputActions.Disable();
     }
 
     private void Update()
     {
-        if (PauseManager.IsPaused)
+        if (PauseManager.IsPaused || isDashing)
         {
             moveInput = Vector2.zero;
             return;
@@ -83,9 +101,10 @@ public class PlayerMovement : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        if (isPunching)
+        if (isPunching || isDashing)
         {
-            rb.linearVelocity = Vector2.zero;
+            if(isPunching)
+                rb.linearVelocity = Vector2.zero;
             return;
         }
 
@@ -186,5 +205,58 @@ public class PlayerMovement : MonoBehaviour
 
         arrow.transform.rotation =
             Quaternion.Euler(0, 0, angle);
+    }
+
+    private void OnDash(InputAction.CallbackContext context)
+    {
+        if (canDash && !isPunching && !isAiming)
+        {
+            StartCoroutine(Dash());
+        }
+    }
+
+    private System.Collections.IEnumerator Dash()
+    {
+        canDash = false;
+        isDashing = true;
+        isInvincible = true;
+
+        rb.linearVelocity = lastDirection.normalized * dashSpeed;
+        // Bạn có thể thêm trigger animation cho dash ở đây
+        // animator.SetTrigger("Dash");
+
+        yield return new WaitForSeconds(dashDuration);
+        isDashing = false;
+        rb.linearVelocity = Vector2.zero;
+
+        // Miễn nhiễm kéo dài 0.4 giây từ lúc bắt đầu dash
+        yield return new WaitForSeconds(0.4f - dashDuration);
+        isInvincible = false;
+
+        // Thời gian hồi chiêu
+        yield return new WaitForSeconds(dashCooldown - 0.4f);
+        canDash = true;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        if (isInvincible)
+            return;
+
+        currentHealth -= damage;
+        Debug.Log("Player took " + damage + " damage. Current health: " + currentHealth);
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        Debug.Log("Player has died.");
+        // Lệnh này sẽ vô hiệu hóa đối tượng người chơi. Bạn có thể thay thế bằng logic khác như
+        // tải lại màn chơi hoặc hiển thị menu game over.
+        gameObject.SetActive(false);
     }
 }

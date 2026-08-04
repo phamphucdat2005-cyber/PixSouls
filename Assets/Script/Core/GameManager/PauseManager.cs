@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -47,5 +49,12 @@ public class PauseManager : MonoBehaviour
 #else
         Application.Quit();
 #endif
+    }
+    public void BackToMenu()
+    {
+        Time.timeScale = 1f;      
+        IsPaused = false;
+
+        SceneManager.LoadScene("MenuScene");
     }
 }
