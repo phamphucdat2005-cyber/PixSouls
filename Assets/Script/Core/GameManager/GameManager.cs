@@ -3,6 +3,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
+    [SerializeField] private AudioClip gameplayMusic;
 
     [SerializeField]
     private GameObject settingsPanel;
@@ -26,5 +27,9 @@ public class GameManager : MonoBehaviour
     public bool IsPaused()
     {
         return isPaused;
+    }
+    private void Start()
+    {
+        AudioManager.Instance.PlayMusic(gameplayMusic);
     }
 }
