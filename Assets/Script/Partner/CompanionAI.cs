@@ -1,7 +1,8 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class CompanionAI : MonoBehaviour
+public class CompanionAI : MonoBehaviour,
+ISaveable
 {
     [Header("References")]
     public Transform player;
@@ -26,9 +27,17 @@ public class CompanionAI : MonoBehaviour
     private Vector2 lastDirection = Vector2.down;
     public float arrowSpeed = 10f;
 
+    public int maxHealth = 10;
+
+    private int currentHealth;
+
+    public HealthBarUI healthBar;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        currentHealth = maxHealth;
+        healthBar.UpdateHealth(currentHealth, maxHealth);
     }
 
     void Update()
@@ -45,6 +54,34 @@ public class CompanionAI : MonoBehaviour
         }
     }
 
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+
+        healthBar.UpdateHealth(currentHealth, maxHealth);
+
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        foreach (Arrow arrow in GetComponentsInChildren<Arrow>())
+        {
+            Destroy(arrow.gameObject);
+        }
+
+
+        if (healthBar != null)
+            healthBar.gameObject.SetActive(false);
+
+        animator.SetTrigger("IsDead");
+
+        Destroy(gameObject, 0.3f);
+    }
     void FollowPlayer()
     {
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
@@ -70,7 +107,7 @@ public class CompanionAI : MonoBehaviour
 
     void FindTarget()
     {
-        EnemyHealth[] enemies = FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None);
+        EnemyHealth[] enemies = FindObjectsByType<EnemyHealth>();
 
         float closest = detectRange;
         target = null;
@@ -155,5 +192,25 @@ public class CompanionAI : MonoBehaviour
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
+    public void Save(GameData data)
+    {
+        data.companion = new CompanionData();
+
+        data.companion.x = transform.position.x;
+        data.companion.y = transform.position.y;
+        data.companion.health = currentHealth;
+    }
+
+    public void Load(GameData data)
+    {
+        transform.position =
+            new Vector3(
+                data.companion.x,
+                data.companion.y,
+                0);
+
+        currentHealth =
+            data.companion.health;
     }
 }

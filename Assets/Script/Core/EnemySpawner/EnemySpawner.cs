@@ -1,8 +1,10 @@
 using UnityEngine;
+using System;
 
 public class EnemySpawner : MonoBehaviour
 {
     public GameObject enemyPrefab;
+    public string prefabID;
 
     public float spawnInterval = 5f;
 
@@ -12,10 +14,7 @@ public class EnemySpawner : MonoBehaviour
 
     private void Start()
     {
-        InvokeRepeating(
-            nameof(SpawnEnemy),
-            1f,
-            spawnInterval);
+        InvokeRepeating(nameof(SpawnEnemy), 1f, spawnInterval);
     }
 
     private void SpawnEnemy()
@@ -25,11 +24,19 @@ public class EnemySpawner : MonoBehaviour
 
         Vector2 randomPos =
             (Vector2)transform.position +
-            Random.insideUnitCircle * spawnRadius;
+            UnityEngine.Random.insideUnitCircle * spawnRadius;
 
-        Instantiate(
+        GameObject enemy = Instantiate(
             enemyPrefab,
             randomPos,
             Quaternion.identity);
+
+        EnemyHealth health = enemy.GetComponent<EnemyHealth>();
+
+        if (health != null)
+        {
+            health.enemyID = Guid.NewGuid().ToString();
+            health.prefabID = prefabID;
+        }
     }
 }

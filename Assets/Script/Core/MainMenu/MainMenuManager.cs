@@ -5,6 +5,7 @@ public class MainMenuManager : MonoBehaviour
 {
     public GameObject settingsPanel;
     [SerializeField] private AudioClip menuMusic;
+    public static bool ContinueRequested = false;
     public void NewGame()
     {
         SceneManager.LoadScene("GameScene");
@@ -15,9 +16,9 @@ public class MainMenuManager : MonoBehaviour
     }
     public void ContinueGame()
     {
+        ContinueRequested = true;
         SceneManager.LoadScene("GameScene");
     }
-
     public void OpenSettings()
     {
         settingsPanel.SetActive(true);
