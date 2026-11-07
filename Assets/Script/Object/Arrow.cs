@@ -29,7 +29,7 @@ public class Arrow : MonoBehaviour
 
             transform.SetParent(enemy.transform);
 
-            enemy.TakeDamage(1);
+            enemy.TakeDamage(1, transform.position);
             
         }
     }

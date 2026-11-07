@@ -1,7 +1,8 @@
 ﻿﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour,
+ISaveable
 {
     public float moveSpeed = 5f;
 
@@ -251,12 +252,29 @@ public class PlayerMovement : MonoBehaviour
             Die();
         }
     }
+    public void Save(GameData data)
+    {
+        data.player = new PlayerData();
 
+        data.player.x = transform.position.x;
+        data.player.y = transform.position.y;
+        data.player.health = currentHealth;
+    }
+
+    public void Load(GameData data)
+    {
+        transform.position =
+            new Vector3(
+                data.player.x,
+                data.player.y,
+                0);
+
+        currentHealth = data.player.health;
+    }
     private void Die()
     {
         Debug.Log("Player has died.");
-        // Lệnh này sẽ vô hiệu hóa đối tượng người chơi. Bạn có thể thay thế bằng logic khác như
-        // tải lại màn chơi hoặc hiển thị menu game over.
+        
         gameObject.SetActive(false);
     }
 }
